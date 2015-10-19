@@ -56,6 +56,17 @@ options:
     version_added: "0.8"
     required: no
     default: null
+  data:
+    description:
+      - provide the given text as stdin to the command
+    required: no
+    default: null
+  binary_data:
+    description:
+      - True if the data in C(data) should be treated as binary data.  In
+      practice, this means that Ansible will not append a C(\\n).
+    required: no
+    default: no
   chdir:
     description:
       - cd into this directory before running the command
@@ -103,6 +114,8 @@ EXAMPLES = '''
 
 # Dict of options and their defaults
 OPTIONS = {'chdir': None,
+           'data': None,
+           'binary_data': False,
            'creates': None,
            'executable': None,
            'NO_LOG': None,
@@ -163,6 +176,8 @@ def main():
           _raw_params = dict(),
           _uses_shell = dict(type='bool', default=False),
           chdir = dict(),
+          data = dict(),
+          binary_data = dict(type='bool', default=False),
           executable = dict(),
           creates = dict(),
           removes = dict(),
@@ -172,6 +187,8 @@ def main():
 
     shell = module.params['_uses_shell']
     chdir = module.params['chdir']
+    data = module.params['data']
+    binary_data = module.params['binary_data']
     executable = module.params['executable']
     args  = module.params['_raw_params']
     creates  = module.params['creates']
@@ -221,7 +238,10 @@ def main():
         args = shlex.split(args)
     startd = datetime.datetime.now()
 
-    rc, out, err = module.run_command(args, executable=executable, use_unsafe_shell=shell)
+    rc, out, err = module.run_command(args, executable=executable,
+                                      use_unsafe_shell=shell,
+                                      data=data,
+                                      binary_data=binary_data)
 
     endd = datetime.datetime.now()
     delta = endd - startd
